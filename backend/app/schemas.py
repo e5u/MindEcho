@@ -79,6 +79,7 @@ class ChatResponse(BaseModel):
     assistant_message: MessageOut
     is_crisis: bool = False
     crisis_message: Optional[str] = None
+    processor_time: Optional[float] = None  # 处理时间（秒）
 
 
 # Emotion schemas

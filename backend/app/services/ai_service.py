@@ -1,6 +1,10 @@
 import os
 import random
+import logging
+import time
 from typing import List, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
@@ -92,14 +96,15 @@ async def get_ai_response(
     # Try OpenAI if configured
     if OPENAI_API_KEY and OPENAI_API_KEY != "sk-your-openai-api-key-here":
         try:
+            logger.info(f"Attempting to call OpenAI API with base_url: {OPENAI_BASE_URL}, model: {OPENAI_MODEL}")
             return await _get_openai_response(
                 user_message=user_message,
                 conversation_history=conversation_history,
                 memory_context=memory_context,
                 cbt_questions=cbt_questions,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"OpenAI API call failed with error: {type(e).__name__}: {str(e)}", exc_info=True)
     
     # Use fallback responses
     responses = FALLBACK_RESPONSES.get(emotion, FALLBACK_RESPONSES["neutral"])
@@ -118,10 +123,13 @@ async def _get_openai_response(
     """Get response from OpenAI API."""
     from openai import AsyncOpenAI
     
+    start_time = time.time()
+    logger.debug(f"Creating OpenAI client with: base_url={OPENAI_BASE_URL}, model={OPENAI_MODEL}")
     client = AsyncOpenAI(
         api_key=OPENAI_API_KEY,
         base_url=OPENAI_BASE_URL,
     )
+    logger.debug("OpenAI client created successfully")
     
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
@@ -152,12 +160,44 @@ async def _get_openai_response(
         })
     
     messages.append({"role": "user", "content": user_message})
+    logger.debug(f"Making API call with {len(messages)} messages")
     
-    response = await client.chat.completions.create(
+    request_start = time.time()
+    stream = await client.chat.completions.create(
         model=OPENAI_MODEL,
         messages=messages,
         max_tokens=500,
         temperature=0.8,
+        stream=True,
     )
+    logger.debug(f"API streaming started (request took {time.time() - request_start:.2f}s)")
     
-    return response.choices[0].message.content
+    # Collect the full response from stream
+    full_response = ""
+    stream_start = time.time()
+    chunk_count = 0
+    try:
+        async for chunk in stream:
+            try:
+                # Safely check if chunk has choices and content
+                if hasattr(chunk, 'choices') and chunk.choices and len(chunk.choices) > 0:
+                    if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
+                        content = chunk.choices[0].delta.content
+                        if content:
+                            full_response += content
+                            chunk_count += 1
+                            logger.debug(f"Received chunk {chunk_count}: {len(content)} chars")
+            except Exception as chunk_error:
+                logger.warning(f"Error processing chunk {chunk_count}: {type(chunk_error).__name__}: {str(chunk_error)}")
+                continue
+    except Exception as stream_error:
+        logger.error(f"Stream processing error after {chunk_count} chunks: {type(stream_error).__name__}: {str(stream_error)}", exc_info=True)
+        # If we got some content, return it. Otherwise re-raise
+        if not full_response:
+            raise
+    
+    stream_duration = time.time() - stream_start
+    total_duration = time.time() - start_time
+    logger.info(f"API response completed - Chunks: {chunk_count}, Stream time: {stream_duration:.2f}s, Total time: {total_duration:.2f}s, Response length: {len(full_response)} chars")
+    logger.debug(f"Full response: {full_response[:100]}..." if len(full_response) > 100 else f"Full response: {full_response}")
+    return full_response

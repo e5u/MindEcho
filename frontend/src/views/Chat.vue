@@ -8,9 +8,13 @@
           <span class="brand-name">心灵回声</span>
         </div>
         <div class="user-info" v-if="authStore.user">
-          <div class="avatar">{{ getInitial(authStore.user.nickname || authStore.user.username) }}</div>
+          <div class="avatar">
+            {{ getInitial(authStore.user.nickname || authStore.user.username) }}
+          </div>
           <div>
-            <div class="user-name">{{ authStore.user.nickname || authStore.user.username }}</div>
+            <div class="user-name">
+              {{ authStore.user.nickname || authStore.user.username }}
+            </div>
             <div class="user-sub">大学生用户</div>
           </div>
         </div>
@@ -26,9 +30,7 @@
         <router-link to="/chat" class="nav-link active-link">
           💬 心理咨询
         </router-link>
-        <router-link to="/emotions" class="nav-link">
-          📊 情绪记录
-        </router-link>
+        <router-link to="/emotions" class="nav-link"> 📊 情绪记录 </router-link>
       </nav>
 
       <div class="conversation-list">
@@ -41,7 +43,7 @@
           @click="loadConversation(conv.id)"
         >
           <span class="conv-icon">💬</span>
-          <span class="conv-title">{{ conv.title || '新对话' }}</span>
+          <span class="conv-title">{{ conv.title || "新对话" }}</span>
         </div>
         <div v-if="conversations.length === 0" class="no-conv">
           还没有对话记录
@@ -80,7 +82,9 @@
               <strong>全国援助热线：400-161-9995</strong>
             </div>
           </div>
-          <button class="crisis-close" @click="showCrisisAlert = false">✕</button>
+          <button class="crisis-close" @click="showCrisisAlert = false">
+            ✕
+          </button>
         </div>
       </transition>
 
@@ -90,14 +94,18 @@
         <div v-if="messages.length === 0" class="welcome">
           <div class="welcome-icon">🌟</div>
           <h3>你好，我是你的心灵伙伴</h3>
-          <p>无论你有什么烦恼、压力、或者只是想聊聊，我都在这里倾听。<br>你的感受对我来说很重要，请放心分享。💙</p>
+          <p>
+            无论你有什么烦恼、压力、或者只是想聊聊，我都在这里倾听。<br />你的感受对我来说很重要，请放心分享。💙
+          </p>
           <div class="quick-starts">
             <button
               v-for="q in quickStarts"
               :key="q"
               class="quick-btn"
               @click="sendQuickMessage(q)"
-            >{{ q }}</button>
+            >
+              {{ q }}
+            </button>
           </div>
         </div>
 
@@ -109,11 +117,23 @@
           :class="msg.role === 'user' ? 'user-row' : 'assistant-row'"
         >
           <div v-if="msg.role === 'assistant'" class="avatar-ai">🌊</div>
-          <div class="message-bubble" :class="msg.role === 'user' ? 'user-bubble' : 'ai-bubble'">
+          <div
+            class="message-bubble"
+            :class="msg.role === 'user' ? 'user-bubble' : 'ai-bubble'"
+          >
             <div class="message-text" v-html="formatMessage(msg.content)"></div>
             <div class="message-meta">
-              <span v-if="msg.role === 'user' && msg.emotion" class="emotion-tag">
+              <span
+                v-if="msg.role === 'user' && msg.emotion"
+                class="emotion-tag"
+              >
                 {{ emotionEmoji[msg.emotion] }} {{ emotionLabels[msg.emotion] }}
+              </span>
+              <span
+                v-if="msg.role === 'assistant' && msg.processor_time"
+                class="processor-time"
+              >
+                ⏱️ {{ msg.processor_time.toFixed(2) }}s
               </span>
               <span class="message-time">{{ formatTime(msg.created_at) }}</span>
             </div>
@@ -134,9 +154,27 @@
       <!-- Input area -->
       <div class="input-area">
         <div class="quick-moods">
-          <button class="mood-btn" @click="quickCheckIn('stress')" :disabled="isTyping">😮‍💨 压力</button>
-          <button class="mood-btn" @click="quickCheckIn('sad')" :disabled="isTyping">😔 难过</button>
-          <button class="mood-btn" @click="quickCheckIn('angry')" :disabled="isTyping">😣 生气</button>
+          <button
+            class="mood-btn"
+            @click="quickCheckIn('stress')"
+            :disabled="isTyping"
+          >
+            😮‍💨 压力
+          </button>
+          <button
+            class="mood-btn"
+            @click="quickCheckIn('sad')"
+            :disabled="isTyping"
+          >
+            😔 难过
+          </button>
+          <button
+            class="mood-btn"
+            @click="quickCheckIn('angry')"
+            :disabled="isTyping"
+          >
+            😣 生气
+          </button>
         </div>
         <div v-if="quickSupport" class="quick-support">
           <div class="support-title">即时支持</div>
@@ -167,190 +205,200 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import api from '../api'
+import { ref, onMounted, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import api from "../api";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-const messages = ref([])
-const conversations = ref([])
-const currentConversationId = ref(null)
-const inputText = ref('')
-const isTyping = ref(false)
-const showCrisisAlert = ref(false)
-const lastEmotion = ref(null)
-const messagesContainer = ref(null)
-const textarea = ref(null)
-const quickSupport = ref('')
+const messages = ref([]);
+const conversations = ref([]);
+const currentConversationId = ref(null);
+const inputText = ref("");
+const isTyping = ref(false);
+const showCrisisAlert = ref(false);
+const lastEmotion = ref(null);
+const messagesContainer = ref(null);
+const textarea = ref(null);
+const quickSupport = ref("");
 
 const emotionLabels = {
-  happy: '开心',
-  sad: '悲伤',
-  anxious: '焦虑',
-  angry: '愤怒',
-  neutral: '平静',
-  fear: '恐惧',
-  lonely: '孤独',
-}
+  happy: "开心",
+  sad: "悲伤",
+  anxious: "焦虑",
+  angry: "愤怒",
+  neutral: "平静",
+  fear: "恐惧",
+  lonely: "孤独",
+};
 
 const emotionEmoji = {
-  happy: '😊',
-  sad: '😢',
-  anxious: '😰',
-  angry: '😤',
-  neutral: '😌',
-  fear: '😨',
-  lonely: '🥺',
-}
+  happy: "😊",
+  sad: "😢",
+  anxious: "😰",
+  angry: "😤",
+  neutral: "😌",
+  fear: "😨",
+  lonely: "🥺",
+};
 
 const quickStarts = [
-  '我最近压力很大',
-  '考试让我很焦虑',
-  '我感到很孤独',
-  '我想聊聊心情',
-]
+  "我最近压力很大",
+  "考试让我很焦虑",
+  "我感到很孤独",
+  "我想聊聊心情",
+];
 
 function getInitial(name) {
-  return name ? name[0].toUpperCase() : '?'
+  return name ? name[0].toUpperCase() : "?";
 }
 
 function formatTime(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 }
 
 function formatMessage(text) {
   return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br>");
 }
 
 async function loadConversations() {
   try {
-    const res = await api.get('/api/chat/conversations')
-    conversations.value = res.data
+    const res = await api.get("/api/chat/conversations");
+    conversations.value = res.data;
   } catch (e) {
-    console.error('Failed to load conversations', e)
+    console.error("Failed to load conversations", e);
   }
 }
 
 async function loadConversation(id) {
   try {
-    const res = await api.get(`/api/chat/conversations/${id}`)
-    currentConversationId.value = id
-    messages.value = res.data.messages
+    const res = await api.get(`/api/chat/conversations/${id}`);
+    currentConversationId.value = id;
+    messages.value = res.data.messages;
     if (messages.value.length > 0) {
-      const lastUserMsg = [...messages.value].reverse().find(m => m.role === 'user')
-      if (lastUserMsg?.emotion) lastEmotion.value = lastUserMsg.emotion
+      const lastUserMsg = [...messages.value]
+        .reverse()
+        .find((m) => m.role === "user");
+      if (lastUserMsg?.emotion) lastEmotion.value = lastUserMsg.emotion;
     }
-    await scrollToBottom()
+    await scrollToBottom();
   } catch (e) {
-    console.error('Failed to load conversation', e)
+    console.error("Failed to load conversation", e);
   }
 }
 
 function startNewConversation() {
-  currentConversationId.value = null
-  messages.value = []
-  lastEmotion.value = null
+  currentConversationId.value = null;
+  messages.value = [];
+  lastEmotion.value = null;
 }
 
 async function sendMessage() {
-  const text = inputText.value.trim()
-  if (!text || isTyping.value) return
+  const text = inputText.value.trim();
+  if (!text || isTyping.value) return;
 
-  inputText.value = ''
-  resetTextarea()
-  isTyping.value = true
+  inputText.value = "";
+  resetTextarea();
+  isTyping.value = true;
 
   const tempUserMsg = {
     id: Date.now(),
-    role: 'user',
+    role: "user",
     content: text,
     created_at: new Date().toISOString(),
-  }
-  messages.value.push(tempUserMsg)
-  await scrollToBottom()
+  };
+  messages.value.push(tempUserMsg);
+  await scrollToBottom();
 
   try {
-    const res = await api.post('/api/chat/send', {
+    const res = await api.post("/api/chat/send", {
       conversation_id: currentConversationId.value,
       message: text,
-    })
+    });
 
-    messages.value = messages.value.filter(m => m.id !== tempUserMsg.id)
-    messages.value.push(res.data.user_message)
-    messages.value.push(res.data.assistant_message)
+    messages.value = messages.value.filter((m) => m.id !== tempUserMsg.id);
+    messages.value.push(res.data.user_message);
 
-    currentConversationId.value = res.data.conversation_id
-    lastEmotion.value = res.data.user_message.emotion
+    // Add processor_time to assistant message
+    const assistantMsg = res.data.assistant_message;
+    assistantMsg.processor_time = res.data.processor_time;
+    messages.value.push(assistantMsg);
+
+    currentConversationId.value = res.data.conversation_id;
+    lastEmotion.value = res.data.user_message.emotion;
 
     if (res.data.is_crisis) {
-      showCrisisAlert.value = true
+      showCrisisAlert.value = true;
     }
 
-    await loadConversations()
-    await scrollToBottom()
+    await loadConversations();
+    await scrollToBottom();
   } catch (e) {
-    messages.value = messages.value.filter(m => m.id !== tempUserMsg.id)
+    messages.value = messages.value.filter((m) => m.id !== tempUserMsg.id);
     messages.value.push({
       id: Date.now(),
-      role: 'assistant',
-      content: '抱歉，我暂时无法回应。请稍后再试。',
+      role: "assistant",
+      content: "抱歉，我暂时无法回应。请稍后再试。",
       created_at: new Date().toISOString(),
-    })
+    });
   } finally {
-    isTyping.value = false
+    isTyping.value = false;
   }
 }
 
 async function sendQuickMessage(text) {
-  inputText.value = text
-  await sendMessage()
+  inputText.value = text;
+  await sendMessage();
 }
 
 async function quickCheckIn(mood) {
   try {
-    const res = await api.post('/api/emotions/quick-checkin', { mood })
-    const supportParts = [res.data.micro_support, res.data.breathing_guide].filter(Boolean)
-    quickSupport.value = supportParts.join(' ')
-    lastEmotion.value = res.data.emotion
+    const res = await api.post("/api/emotions/quick-checkin", { mood });
+    const supportParts = [
+      res.data.micro_support,
+      res.data.breathing_guide,
+    ].filter(Boolean);
+    quickSupport.value = supportParts.join(" ");
+    lastEmotion.value = res.data.emotion;
   } catch (e) {
-    quickSupport.value = '我在这里陪你。先慢慢呼吸一下，我们再继续。'
+    quickSupport.value = "我在这里陪你。先慢慢呼吸一下，我们再继续。";
   }
 }
 
 async function scrollToBottom() {
-  await nextTick()
+  await nextTick();
   if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   }
 }
 
 function autoResize() {
   if (textarea.value) {
-    textarea.value.style.height = 'auto'
-    textarea.value.style.height = Math.min(textarea.value.scrollHeight, 120) + 'px'
+    textarea.value.style.height = "auto";
+    textarea.value.style.height =
+      Math.min(textarea.value.scrollHeight, 120) + "px";
   }
 }
 
 function resetTextarea() {
   if (textarea.value) {
-    textarea.value.style.height = 'auto'
+    textarea.value.style.height = "auto";
   }
 }
 
 function handleLogout() {
-  authStore.logout()
-  router.push('/login')
+  authStore.logout();
+  router.push("/login");
 }
 
 onMounted(() => {
-  loadConversations()
-})
+  loadConversations();
+});
 </script>
 
 <style scoped>
@@ -371,10 +419,35 @@ onMounted(() => {
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .chat-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    height: auto;
+    max-height: 120px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+}
+
 .sidebar-header {
   padding: 20px 16px;
   background: linear-gradient(135deg, #6c63ff, #764ba2);
   color: white;
+}
+
+@media (max-width: 768px) {
+  .sidebar-header {
+    padding: 12px 16px;
+    min-width: 100%;
+  }
 }
 
 .brand {
@@ -402,7 +475,7 @@ onMounted(() => {
 .avatar {
   width: 36px;
   height: 36px;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -426,6 +499,13 @@ onMounted(() => {
   border-bottom: 1px solid var(--border);
 }
 
+@media (max-width: 768px) {
+  .sidebar-actions {
+    padding: 8px;
+    border-bottom: none;
+  }
+}
+
 .btn-new {
   width: 100%;
   padding: 10px;
@@ -436,6 +516,13 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 500;
   transition: opacity 0.2s;
+}
+
+@media (max-width: 768px) {
+  .btn-new {
+    padding: 8px;
+    font-size: 12px;
+  }
 }
 
 .btn-new:hover {
@@ -450,12 +537,24 @@ onMounted(() => {
   gap: 4px;
 }
 
+@media (max-width: 768px) {
+  .nav-links {
+    padding: 0 8px;
+    border-bottom: none;
+    flex-direction: row;
+    flex: 1;
+    gap: 6px;
+  }
+}
+
 .nav-link {
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 14px;
   color: var(--text-light);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .nav-link:hover,
@@ -468,6 +567,12 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 8px;
+}
+
+@media (max-width: 768px) {
+  .conversation-list {
+    display: none;
+  }
 }
 
 .list-title {
@@ -516,6 +621,14 @@ onMounted(() => {
   border-top: 1px solid var(--border);
 }
 
+@media (max-width: 768px) {
+  .sidebar-footer {
+    padding: 0;
+    border-top: none;
+    display: none;
+  }
+}
+
 .btn-logout {
   width: 100%;
   padding: 10px;
@@ -524,7 +637,9 @@ onMounted(() => {
   border-radius: 10px;
   font-size: 14px;
   color: var(--text-light);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .btn-logout:hover {
@@ -549,6 +664,21 @@ onMounted(() => {
   justify-content: space-between;
 }
 
+@media (max-width: 768px) {
+  .chat-header {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header {
+    padding: 10px 12px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}
+
 .header-left {
   display: flex;
   align-items: center;
@@ -569,8 +699,13 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .status-text {
@@ -640,6 +775,20 @@ onMounted(() => {
   gap: 16px;
 }
 
+@media (max-width: 768px) {
+  .messages-container {
+    padding: 16px 16px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .messages-container {
+    padding: 12px 12px;
+    gap: 10px;
+  }
+}
+
 .welcome {
   flex: 1;
   display: flex;
@@ -651,9 +800,22 @@ onMounted(() => {
   color: var(--text-light);
 }
 
+@media (max-width: 480px) {
+  .welcome {
+    padding: 20px 16px;
+  }
+}
+
 .welcome-icon {
   font-size: 48px;
   margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .welcome-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
 }
 
 .welcome h3 {
@@ -662,11 +824,24 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
+@media (max-width: 480px) {
+  .welcome h3 {
+    font-size: 16px;
+  }
+}
+
 .welcome p {
   font-size: 15px;
   line-height: 1.7;
   max-width: 400px;
   margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+  .welcome p {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
 }
 
 .quick-starts {
@@ -683,7 +858,16 @@ onMounted(() => {
   border-radius: 20px;
   font-size: 13px;
   color: var(--primary);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+@media (max-width: 480px) {
+  .quick-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
 }
 
 .quick-btn:hover {
@@ -721,6 +905,22 @@ onMounted(() => {
   line-height: 1.6;
 }
 
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-bubble {
+    max-width: 90%;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
 .user-bubble {
   background: linear-gradient(135deg, #6c63ff, #a29bfe);
   color: white;
@@ -732,7 +932,7 @@ onMounted(() => {
   border: 1px solid var(--border);
   color: var(--text);
   border-bottom-left-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .message-text {
@@ -751,7 +951,7 @@ onMounted(() => {
 .emotion-tag {
   font-size: 11px;
   opacity: 0.8;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   padding: 2px 6px;
   border-radius: 8px;
 }
@@ -764,6 +964,13 @@ onMounted(() => {
 .message-time {
   font-size: 11px;
   opacity: 0.7;
+}
+
+.processor-time {
+  font-size: 11px;
+  opacity: 0.8;
+  color: var(--primary);
+  font-weight: 500;
 }
 
 .typing-bubble {
@@ -781,18 +988,40 @@ onMounted(() => {
   animation: bounce 1.4s infinite;
 }
 
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-6px); }
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
 }
 
 .input-area {
   padding: 16px 24px;
   background: white;
   border-top: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .input-area {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-area {
+    padding: 10px 12px;
+  }
 }
 
 .quick-moods {
@@ -810,6 +1039,13 @@ onMounted(() => {
   font-size: 12px;
 }
 
+@media (max-width: 480px) {
+  .mood-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
+
 .quick-support {
   background: #f6fbff;
   border: 1px solid #d5ebff;
@@ -818,16 +1054,35 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 
+@media (max-width: 480px) {
+  .quick-support {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+}
+
 .support-title {
   font-size: 12px;
   color: #357ab8;
   margin-bottom: 2px;
 }
 
+@media (max-width: 480px) {
+  .support-title {
+    font-size: 11px;
+  }
+}
+
 .support-body {
   font-size: 13px;
   color: #2b4c6f;
   line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .support-body {
+    font-size: 12px;
+  }
 }
 
 .input-wrapper {
@@ -839,6 +1094,14 @@ onMounted(() => {
   border-radius: 16px;
   padding: 10px 14px;
   transition: border-color 0.2s;
+}
+
+@media (max-width: 480px) {
+  .input-wrapper {
+    border-radius: 12px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
 }
 
 .input-wrapper:focus-within {
@@ -856,6 +1119,14 @@ textarea {
   max-height: 120px;
   line-height: 1.5;
   color: var(--text);
+  min-height: 40px;
+}
+
+@media (max-width: 480px) {
+  textarea {
+    font-size: 13px;
+    min-height: 36px;
+  }
 }
 
 textarea::placeholder {
@@ -872,6 +1143,17 @@ textarea::placeholder {
   font-weight: 600;
   flex-shrink: 0;
   transition: opacity 0.2s;
+  min-height: 40px;
+  min-width: 50px;
+}
+
+@media (max-width: 480px) {
+  .send-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    min-height: 36px;
+    min-width: 45px;
+  }
 }
 
 .send-btn:disabled {

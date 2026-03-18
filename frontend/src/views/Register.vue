@@ -71,34 +71,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import api from '../api'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import api from "../api";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
 const form = ref({
-  username: '',
-  nickname: '',
-  email: '',
-  password: '',
-})
-const loading = ref(false)
-const error = ref('')
+  username: "",
+  nickname: "",
+  email: "",
+  password: "",
+});
+const loading = ref(false);
+const error = ref("");
 
 async function handleRegister() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = "";
   try {
-    const res = await api.post('/api/auth/register', form.value)
-    authStore.setAuth(res.data.access_token, res.data.user)
-    router.push('/chat')
+    const res = await api.post("/api/auth/register", form.value);
+    authStore.setAuth(res.data.access_token, res.data.user);
+    router.push("/chat");
   } catch (err) {
-    error.value = err.response?.data?.detail || '注册失败，请稍后重试'
+    error.value = err.response?.data?.detail || "注册失败，请稍后重试";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
@@ -122,14 +122,34 @@ async function handleRegister() {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
+@media (max-width: 480px) {
+  .auth-card {
+    border-radius: 16px;
+    padding: 32px 20px;
+    max-width: 100%;
+  }
+}
+
 .logo {
   text-align: center;
   margin-bottom: 32px;
 }
 
+@media (max-width: 480px) {
+  .logo {
+    margin-bottom: 20px;
+  }
+}
+
 .logo-icon {
   font-size: 48px;
   margin-bottom: 8px;
+}
+
+@media (max-width: 480px) {
+  .logo-icon {
+    font-size: 36px;
+  }
 }
 
 .logo-title {
@@ -139,15 +159,33 @@ async function handleRegister() {
   margin-bottom: 6px;
 }
 
+@media (max-width: 480px) {
+  .logo-title {
+    font-size: 22px;
+  }
+}
+
 .logo-subtitle {
   font-size: 13px;
   color: #999;
+}
+
+@media (max-width: 480px) {
+  .logo-subtitle {
+    font-size: 11px;
+  }
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+@media (max-width: 480px) {
+  .form {
+    gap: 14px;
+  }
 }
 
 .form-group {
@@ -162,6 +200,12 @@ async function handleRegister() {
   color: #555;
 }
 
+@media (max-width: 480px) {
+  .form-group label {
+    font-size: 13px;
+  }
+}
+
 .form-group input {
   padding: 12px 16px;
   border: 2px solid #e8e8e8;
@@ -170,6 +214,14 @@ async function handleRegister() {
   outline: none;
   transition: border-color 0.2s;
   font-family: inherit;
+  min-height: 44px;
+}
+
+@media (max-width: 480px) {
+  .form-group input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
 }
 
 .form-group input:focus {
@@ -185,6 +237,13 @@ async function handleRegister() {
   border-left: 3px solid #d63031;
 }
 
+@media (max-width: 480px) {
+  .error-msg {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
 .btn-primary {
   padding: 14px;
   background: linear-gradient(135deg, #6c63ff, #a29bfe);
@@ -194,7 +253,17 @@ async function handleRegister() {
   font-size: 16px;
   font-weight: 600;
   margin-top: 4px;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+  min-height: 44px;
+}
+
+@media (max-width: 480px) {
+  .btn-primary {
+    padding: 12px;
+    font-size: 14px;
+  }
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -214,6 +283,13 @@ async function handleRegister() {
   color: #999;
 }
 
+@media (max-width: 480px) {
+  .switch-link {
+    margin-top: 16px;
+    font-size: 13px;
+  }
+}
+
 .switch-link a {
   color: #6c63ff;
   font-weight: 500;
@@ -224,5 +300,12 @@ async function handleRegister() {
   margin-top: 16px;
   font-size: 12px;
   color: #bbb;
+}
+
+@media (max-width: 480px) {
+  .tagline {
+    font-size: 11px;
+    margin-top: 12px;
+  }
 }
 </style>

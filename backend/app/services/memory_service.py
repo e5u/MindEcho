@@ -3,11 +3,20 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 from sqlalchemy.orm import Session
 from app import models
+from app.services.emotion_service import EMOTION_LABELS
 
 
 STRESS_HINTS = ["压力", "ddl", "截止", "作业", "考试", "绩点"]
 ANXIETY_HINTS = ["焦虑", "担心", "害怕", "紧张", "睡不着"]
 HABIT_HINTS = ["熬夜", "失眠", "刷手机", "拖延", "暴饮暴食"]
+
+# 等级翻译字典
+LEVEL_LABELS = {
+    "high": "高",
+    "medium": "中",
+    "low": "低",
+    "unknown": "未知",
+}
 
 
 def _level_by_ratio(ratio: float) -> str:
@@ -44,12 +53,17 @@ def rebuild_user_memory(db: Session, user_id: int) -> models.UserMemory:
 
     emotion_counter = Counter(record.emotion for record in records)
     top_emotions = [emotion for emotion, _ in emotion_counter.most_common(3)]
-    summary = "、".join(top_emotions) if top_emotions else "平静"
+    # 翻译情绪为中文
+    top_emotions_str = "、".join(EMOTION_LABELS.get(e, e) for e in top_emotions) if top_emotions else "平静"
 
     has_message_data = len(messages) > 0
     stress_level = _level_by_ratio(stress_ratio) if has_message_data else "unknown"
     anxiety_level = _level_by_ratio(anxiety_ratio) if has_message_data else "unknown"
     habit_pattern = "、".join(habit_hits) if habit_hits else "暂未发现明显习惯模式"
+
+    # 中文化的等级
+    stress_level_cn = LEVEL_LABELS.get(stress_level, stress_level)
+    anxiety_level_cn = LEVEL_LABELS.get(anxiety_level, anxiety_level)
 
     profile = db.query(models.UserMemory).filter(models.UserMemory.user_id == user_id).first()
     if not profile:
@@ -61,8 +75,8 @@ def rebuild_user_memory(db: Session, user_id: int) -> models.UserMemory:
     profile.habit_pattern = habit_pattern
     profile.top_emotions = ",".join(top_emotions)
     profile.conversation_summary = (
-        f"最近{len(messages)}次表达以{summary}为主，"
-        f"压力水平{stress_level}，焦虑水平{anxiety_level}。"
+        f"最近{len(messages)}次表达以{top_emotions_str}为主，"
+        f"压力水平{stress_level_cn}，焦虑水平{anxiety_level_cn}。"
     )
     db.commit()
     db.refresh(profile)
@@ -85,15 +99,15 @@ def should_rebuild_memory(profile: models.UserMemory | None, hours: int = 6) -> 
 def get_memory_context(profile: models.UserMemory | None) -> Dict[str, str]:
     if not profile:
         return {
-            "stress_pattern": "unknown",
-            "anxiety_pattern": "unknown",
+            "stress_pattern": "未知",
+            "anxiety_pattern": "未知",
             "habit_pattern": "暂无",
             "conversation_summary": "暂无历史对话记忆。",
         }
 
     return {
-        "stress_pattern": profile.stress_pattern,
-        "anxiety_pattern": profile.anxiety_pattern,
+        "stress_pattern": LEVEL_LABELS.get(profile.stress_pattern, profile.stress_pattern),
+        "anxiety_pattern": LEVEL_LABELS.get(profile.anxiety_pattern, profile.anxiety_pattern),
         "habit_pattern": profile.habit_pattern or "暂无",
         "conversation_summary": profile.conversation_summary or "暂无历史对话记忆。",
     }

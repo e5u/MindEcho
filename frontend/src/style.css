@@ -13,6 +13,7 @@
   --danger: #d63031;
   --shadow: 0 4px 20px rgba(108, 99, 255, 0.12);
   --radius: 16px;
+  --sidebar-width: 280px;
 }
 
 * {
@@ -21,11 +22,16 @@
   padding: 0;
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
   font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
@@ -60,4 +66,27 @@ button {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Tablet and Below (768px and down) */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  :root {
+    --sidebar-width: 0;
+    --radius: 12px;
+  }
+}
+
+/* Mobile (480px and down) */
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+  
+  :root {
+    --radius: 8px;
+  }
 }

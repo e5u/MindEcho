@@ -7,21 +7,21 @@
           <span class="brand-name">心灵回声</span>
         </div>
         <div class="user-info" v-if="authStore.user">
-          <div class="avatar">{{ getInitial(authStore.user.nickname || authStore.user.username) }}</div>
+          <div class="avatar">
+            {{ getInitial(authStore.user.nickname || authStore.user.username) }}
+          </div>
           <div>
-            <div class="user-name">{{ authStore.user.nickname || authStore.user.username }}</div>
+            <div class="user-name">
+              {{ authStore.user.nickname || authStore.user.username }}
+            </div>
             <div class="user-sub">大学生用户</div>
           </div>
         </div>
       </div>
 
       <nav class="nav-links">
-        <router-link to="/chat" class="nav-link">
-          💬 心理咨询
-        </router-link>
-        <router-link to="/emotions" class="nav-link">
-          📊 情绪记录
-        </router-link>
+        <router-link to="/chat" class="nav-link"> 💬 心理咨询 </router-link>
+        <router-link to="/emotions" class="nav-link"> 📊 情绪记录 </router-link>
       </nav>
 
       <div class="sidebar-footer">
@@ -40,7 +40,9 @@
             class="filter-btn"
             :class="{ active: selectedDays === d.value }"
             @click="changeDays(d.value)"
-          >{{ d.label }}</button>
+          >
+            {{ d.label }}
+          </button>
         </div>
       </header>
 
@@ -91,7 +93,7 @@
                       class="bar-fill"
                       :style="{
                         width: stat.percentage + '%',
-                        background: emotionColors[stat.emotion]
+                        background: emotionColors[stat.emotion],
                       }"
                     ></div>
                   </div>
@@ -105,17 +107,20 @@
             <h3>情绪趋势（近 {{ selectedDays }} 天）</h3>
             <div class="trend-chart" v-if="trendData.length > 0">
               <div class="trend-legend">
-                <span v-for="(color, emotion) in emotionColors" :key="emotion" class="legend-item">
-                  <span class="legend-dot" :style="{ background: color }"></span>
+                <span
+                  v-for="(color, emotion) in emotionColors"
+                  :key="emotion"
+                  class="legend-item"
+                >
+                  <span
+                    class="legend-dot"
+                    :style="{ background: color }"
+                  ></span>
                   {{ emotionLabels[emotion] }}
                 </span>
               </div>
               <div class="trend-bars">
-                <div
-                  v-for="day in trendData"
-                  :key="day.date"
-                  class="trend-day"
-                >
+                <div v-for="day in trendData" :key="day.date" class="trend-day">
                   <div class="day-bars">
                     <div
                       v-for="(count, emotion) in day.emotions"
@@ -123,7 +128,7 @@
                       class="day-bar"
                       :style="{
                         height: Math.min(count * 20, 80) + 'px',
-                        background: emotionColors[emotion]
+                        background: emotionColors[emotion],
                       }"
                       :title="`${emotionLabels[emotion]}: ${count}次`"
                     ></div>
@@ -148,12 +153,19 @@
               class="record-item"
             >
               <div class="record-left">
-                <span class="record-emoji">{{ emotionEmoji[record.emotion] }}</span>
+                <span class="record-emoji">{{
+                  emotionEmoji[record.emotion]
+                }}</span>
                 <div>
-                  <div class="record-emotion" :style="{ color: emotionColors[record.emotion] }">
+                  <div
+                    class="record-emotion"
+                    :style="{ color: emotionColors[record.emotion] }"
+                  >
                     {{ emotionLabels[record.emotion] }}
                   </div>
-                  <div class="record-time">{{ formatDateTime(record.created_at) }}</div>
+                  <div class="record-time">
+                    {{ formatDateTime(record.created_at) }}
+                  </div>
                 </div>
               </div>
               <div class="record-score">
@@ -161,12 +173,14 @@
                   <div
                     class="score-fill"
                     :style="{
-                      width: (record.emotion_score * 100) + '%',
-                      background: emotionColors[record.emotion]
+                      width: record.emotion_score * 100 + '%',
+                      background: emotionColors[record.emotion],
                     }"
                   ></div>
                 </div>
-                <span class="score-num">{{ Math.round(record.emotion_score * 100) }}%</span>
+                <span class="score-num"
+                  >{{ Math.round(record.emotion_score * 100) }}%</span
+                >
               </div>
             </div>
           </div>
@@ -181,13 +195,23 @@
           <div class="report-item">
             <div class="label">可能原因</div>
             <ul>
-              <li v-for="(c, index) in weeklyReport.possible_causes" :key="`cause-${index}`">{{ c }}</li>
+              <li
+                v-for="(c, index) in weeklyReport.possible_causes"
+                :key="`cause-${index}`"
+              >
+                {{ c }}
+              </li>
             </ul>
           </div>
           <div class="report-item">
             <div class="label">建议</div>
             <ul>
-              <li v-for="(s, index) in weeklyReport.suggestions" :key="`weekly-suggestion-${index}`">{{ s }}</li>
+              <li
+                v-for="(s, index) in weeklyReport.suggestions"
+                :key="`weekly-suggestion-${index}`"
+              >
+                {{ s }}
+              </li>
             </ul>
           </div>
         </div>
@@ -196,14 +220,23 @@
           <h3>🎯 今日个性化建议</h3>
           <p class="daily-hint">{{ dailySuggestion.memory_hint }}</p>
           <ul>
-            <li v-for="(s, index) in dailySuggestion.suggestions" :key="`daily-suggestion-${index}`">{{ s }}</li>
+            <li
+              v-for="(s, index) in dailySuggestion.suggestions"
+              :key="`daily-suggestion-${index}`"
+            >
+              {{ s }}
+            </li>
           </ul>
         </div>
 
         <div class="tips-card">
           <h3>💡 心理健康小贴士</h3>
           <div class="tips-grid">
-            <div class="tip-item" v-for="tip in mentalHealthTips" :key="tip.title">
+            <div
+              class="tip-item"
+              v-for="tip in mentalHealthTips"
+              :key="tip.title"
+            >
               <div class="tip-icon">{{ tip.icon }}</div>
               <div class="tip-title">{{ tip.title }}</div>
               <div class="tip-body">{{ tip.body }}</div>
@@ -216,142 +249,142 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import api from '../api'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import api from "../api";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-const loading = ref(true)
-const selectedDays = ref(7)
-const historyData = ref({ records: [], stats: [], total: 0 })
-const trendData = ref([])
-const weeklyReport = ref(null)
-const dailySuggestion = ref(null)
+const loading = ref(true);
+const selectedDays = ref(7);
+const historyData = ref({ records: [], stats: [], total: 0 });
+const trendData = ref([]);
+const weeklyReport = ref(null);
+const dailySuggestion = ref(null);
 
 const dateOptions = [
-  { label: '7天', value: 7 },
-  { label: '30天', value: 30 },
-  { label: '90天', value: 90 },
-]
+  { label: "7天", value: 7 },
+  { label: "30天", value: 30 },
+  { label: "90天", value: 90 },
+];
 
 const emotionLabels = {
-  happy: '开心',
-  sad: '悲伤',
-  anxious: '焦虑',
-  angry: '愤怒',
-  neutral: '平静',
-  fear: '恐惧',
-  lonely: '孤独',
-}
+  happy: "开心",
+  sad: "悲伤",
+  anxious: "焦虑",
+  angry: "愤怒",
+  neutral: "平静",
+  fear: "恐惧",
+  lonely: "孤独",
+};
 
 const emotionEmoji = {
-  happy: '😊',
-  sad: '😢',
-  anxious: '😰',
-  angry: '😤',
-  neutral: '😌',
-  fear: '😨',
-  lonely: '🥺',
-}
+  happy: "😊",
+  sad: "😢",
+  anxious: "😰",
+  angry: "😤",
+  neutral: "😌",
+  fear: "😨",
+  lonely: "🥺",
+};
 
 const emotionColors = {
-  happy: '#00b894',
-  sad: '#74b9ff',
-  anxious: '#fdcb6e',
-  angry: '#ff7675',
-  neutral: '#a29bfe',
-  fear: '#fd79a8',
-  lonely: '#636e72',
-}
+  happy: "#00b894",
+  sad: "#74b9ff",
+  anxious: "#fdcb6e",
+  angry: "#ff7675",
+  neutral: "#a29bfe",
+  fear: "#fd79a8",
+  lonely: "#636e72",
+};
 
 const mentalHealthTips = [
   {
-    icon: '🧘',
-    title: '正念冥想',
-    body: '每天花10分钟进行深呼吸或冥想，有助于缓解焦虑和压力。',
+    icon: "🧘",
+    title: "正念冥想",
+    body: "每天花10分钟进行深呼吸或冥想，有助于缓解焦虑和压力。",
   },
   {
-    icon: '🏃',
-    title: '适量运动',
-    body: '运动能促进内啡肽分泌，改善情绪。每天30分钟的有氧运动效果显著。',
+    icon: "🏃",
+    title: "适量运动",
+    body: "运动能促进内啡肽分泌，改善情绪。每天30分钟的有氧运动效果显著。",
   },
   {
-    icon: '😴',
-    title: '规律睡眠',
-    body: '保持7-8小时的充足睡眠，避免熬夜。睡眠对情绪调节非常重要。',
+    icon: "😴",
+    title: "规律睡眠",
+    body: "保持7-8小时的充足睡眠，避免熬夜。睡眠对情绪调节非常重要。",
   },
   {
-    icon: '👥',
-    title: '社交连接',
-    body: '主动与朋友、同学保持联系，孤独感会加重心理负担。',
+    icon: "👥",
+    title: "社交连接",
+    body: "主动与朋友、同学保持联系，孤独感会加重心理负担。",
   },
   {
-    icon: '📚',
-    title: '寻求专业帮助',
-    body: '如果情绪长期低落，请及时联系学校心理咨询中心或专业心理医生。',
+    icon: "📚",
+    title: "寻求专业帮助",
+    body: "如果情绪长期低落，请及时联系学校心理咨询中心或专业心理医生。",
   },
   {
-    icon: '🎨',
-    title: '发展兴趣爱好',
-    body: '培养一项让你放松的爱好，如绘画、音乐、写作等，有助于情绪释放。',
+    icon: "🎨",
+    title: "发展兴趣爱好",
+    body: "培养一项让你放松的爱好，如绘画、音乐、写作等，有助于情绪释放。",
   },
-]
+];
 
 function getInitial(name) {
-  return name ? name[0].toUpperCase() : '?'
+  return name ? name[0].toUpperCase() : "?";
 }
 
 function formatDateTime(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleString('zh-CN', {
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const d = new Date(dateStr);
+  return d.toLocaleString("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function formatShortDate(dateStr) {
-  const d = new Date(dateStr)
-  return `${d.getMonth() + 1}/${d.getDate()}`
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 async function fetchData() {
-  loading.value = true
+  loading.value = true;
   try {
     const [histRes, trendRes, reportRes, suggestionRes] = await Promise.all([
       api.get(`/api/emotions/history?days=${selectedDays.value}`),
       api.get(`/api/emotions/trend?days=${selectedDays.value}`),
-      api.get('/api/emotions/weekly-report'),
-      api.get('/api/emotions/daily-suggestion'),
-    ])
-    historyData.value = histRes.data
-    trendData.value = trendRes.data.trend
-    weeklyReport.value = reportRes.data
-    dailySuggestion.value = suggestionRes.data
+      api.get("/api/emotions/weekly-report"),
+      api.get("/api/emotions/daily-suggestion"),
+    ]);
+    historyData.value = histRes.data;
+    trendData.value = trendRes.data.trend;
+    weeklyReport.value = reportRes.data;
+    dailySuggestion.value = suggestionRes.data;
   } catch (e) {
-    console.error('Failed to fetch emotion data', e)
+    console.error("Failed to fetch emotion data", e);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function changeDays(days) {
-  selectedDays.value = days
-  fetchData()
+  selectedDays.value = days;
+  fetchData();
 }
 
 function handleLogout() {
-  authStore.logout()
-  router.push('/login')
+  authStore.logout();
+  router.push("/login");
 }
 
 onMounted(() => {
-  fetchData()
-})
+  fetchData();
+});
 </script>
 
 <style scoped>
@@ -372,6 +405,23 @@ onMounted(() => {
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .chat-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    height: auto;
+    max-height: 120px;
+    overflow-y: auto;
+    flex-direction: row;
+  }
+}
+
 .sidebar-header {
   padding: 20px 16px;
   background: linear-gradient(135deg, #6c63ff, #764ba2);
@@ -385,8 +435,13 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.brand-icon { font-size: 24px; }
-.brand-name { font-size: 18px; font-weight: 700; }
+.brand-icon {
+  font-size: 24px;
+}
+.brand-name {
+  font-size: 18px;
+  font-weight: 700;
+}
 
 .user-info {
   display: flex;
@@ -397,7 +452,7 @@ onMounted(() => {
 .avatar {
   width: 36px;
   height: 36px;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -406,8 +461,14 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.user-name { font-size: 14px; font-weight: 600; }
-.user-sub { font-size: 11px; opacity: 0.8; }
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+.user-sub {
+  font-size: 11px;
+  opacity: 0.8;
+}
 
 .nav-links {
   padding: 8px 12px;
@@ -422,7 +483,9 @@ onMounted(() => {
   border-radius: 10px;
   font-size: 14px;
   color: var(--text-light);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .nav-link:hover,
@@ -446,7 +509,9 @@ onMounted(() => {
   font-size: 14px;
   color: var(--text-light);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .btn-logout:hover {
@@ -464,6 +529,20 @@ onMounted(() => {
   gap: 20px;
 }
 
+@media (max-width: 768px) {
+  .emotions-main {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .emotions-main {
+    padding: 12px;
+    gap: 12px;
+  }
+}
+
 .page-header {
   background: white;
   border-radius: var(--radius);
@@ -471,9 +550,27 @@ onMounted(() => {
   box-shadow: var(--shadow);
 }
 
+@media (max-width: 768px) {
+  .page-header {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: 12px;
+  }
+}
+
 .page-header h2 {
   font-size: 22px;
   margin-bottom: 6px;
+}
+
+@media (max-width: 480px) {
+  .page-header h2 {
+    font-size: 18px;
+  }
 }
 
 .page-header p {
@@ -482,9 +579,23 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
+@media (max-width: 480px) {
+  .page-header p {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+}
+
 .date-filter {
   display: flex;
   gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .date-filter {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 }
 
 .filter-btn {
@@ -496,6 +607,13 @@ onMounted(() => {
   background: white;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+@media (max-width: 480px) {
+  .filter-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
 }
 
 .filter-btn.active,
@@ -525,13 +643,29 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
 }
 
 .stat-card {
@@ -543,6 +677,18 @@ onMounted(() => {
   border-top: 4px solid var(--primary-light);
 }
 
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 12px;
+  }
+}
+
 .stat-card.total {
   border-top-color: var(--primary);
 }
@@ -552,10 +698,23 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 
+@media (max-width: 480px) {
+  .stat-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+}
+
 .stat-value {
   font-size: 28px;
   font-weight: 700;
   color: var(--text);
+}
+
+@media (max-width: 480px) {
+  .stat-value {
+    font-size: 20px;
+  }
 }
 
 .stat-label {
@@ -564,16 +723,42 @@ onMounted(() => {
   margin-top: 4px;
 }
 
+@media (max-width: 480px) {
+  .stat-label {
+    font-size: 11px;
+    margin-top: 2px;
+  }
+}
+
 .stat-pct {
   font-size: 12px;
   color: var(--primary);
   margin-top: 2px;
 }
 
+@media (max-width: 480px) {
+  .stat-pct {
+    font-size: 10px;
+  }
+}
+
 .charts-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .charts-row {
+    gap: 10px;
+  }
 }
 
 .chart-card {
@@ -583,11 +768,37 @@ onMounted(() => {
   box-shadow: var(--shadow);
 }
 
+@media (max-width: 768px) {
+  .chart-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-card {
+    padding: 12px;
+  }
+}
+
 .chart-card h3 {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 16px;
   color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .chart-card h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-card h3 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
 }
 
 .no-data {
@@ -789,6 +1000,20 @@ onMounted(() => {
   gap: 14px;
 }
 
+@media (max-width: 768px) {
+  .tips-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tips-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 .tip-item {
   padding: 16px;
   background: linear-gradient(135deg, #f0eeff, #f8f9ff);
@@ -796,9 +1021,22 @@ onMounted(() => {
   border: 1px solid #e8e4ff;
 }
 
+@media (max-width: 480px) {
+  .tip-item {
+    padding: 12px;
+  }
+}
+
 .tip-icon {
   font-size: 24px;
   margin-bottom: 8px;
+}
+
+@media (max-width: 480px) {
+  .tip-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
 }
 
 .tip-title {
@@ -808,10 +1046,23 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
+@media (max-width: 480px) {
+  .tip-title {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+}
+
 .tip-body {
   font-size: 13px;
   color: var(--text-light);
   line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .tip-body {
+    font-size: 12px;
+  }
 }
 
 .content {
@@ -827,13 +1078,44 @@ onMounted(() => {
   box-shadow: var(--shadow);
 }
 
+@media (max-width: 768px) {
+  .report-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-card {
+    padding: 12px;
+  }
+}
+
 .report-card h3 {
   font-size: 16px;
   margin-bottom: 12px;
 }
 
+@media (max-width: 768px) {
+  .report-card h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-card h3 {
+    font-size: 13px;
+  }
+}
+
 .report-item {
   margin-bottom: 10px;
+}
+
+@media (max-width: 480px) {
+  .report-item {
+    margin-bottom: 8px;
+  }
 }
 
 .label {
@@ -842,11 +1124,25 @@ onMounted(() => {
   margin-bottom: 4px;
 }
 
+@media (max-width: 480px) {
+  .label {
+    font-size: 12px;
+  }
+}
+
 .value,
 .report-card li,
 .daily-hint {
   font-size: 14px;
   line-height: 1.6;
   color: var(--text);
+}
+
+@media (max-width: 480px) {
+  .value,
+  .report-card li,
+  .daily-hint {
+    font-size: 13px;
+  }
 }
 </style>

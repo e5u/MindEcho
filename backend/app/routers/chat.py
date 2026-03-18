@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+import time
 from app.database import get_db
 from app import models, schemas
 from app.auth import get_current_user
@@ -19,6 +20,8 @@ async def send_message(
     current_user: models.User = Depends(get_current_user),
 ):
     """发送消息并获取AI回复"""
+    request_start_time = time.time()
+    
     # Get or create conversation
     if request.conversation_id:
         conversation = db.query(models.Conversation).filter(
@@ -96,12 +99,15 @@ async def send_message(
     db.commit()
     db.refresh(assistant_msg)
     
+    processor_time = time.time() - request_start_time
+    
     return {
         "conversation_id": conversation.id,
         "user_message": user_msg,
         "assistant_message": assistant_msg,
         "is_crisis": is_crisis,
         "crisis_message": "你很重要。请先联系身边可信任的人，并拨打心理援助热线：400-161-9995" if is_crisis else None,
+        "processor_time": processor_time,
     }
 
 
