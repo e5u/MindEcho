@@ -7,8 +7,16 @@ from app.database import get_db
 from app import models, schemas
 from app.auth import get_current_user
 from app.services.emotion_service import EMOTION_LABELS
+from app.services.report_service import generate_weekly_report
+from app.services.memory_service import rebuild_user_memory, build_daily_suggestions
 
 router = APIRouter(prefix="/api/emotions", tags=["情绪"])
+
+QUICK_MOOD_MAPPING = {
+    "stress": ("anxious", 0.78, "先把双脚踩稳地面，跟我做3轮呼吸：吸气4秒，呼气6秒。你已经在照顾自己了。"),
+    "sad": ("sad", 0.75, "你愿意表达难受已经很勇敢。现在给自己一个小目标：喝几口温水，慢慢把身体放松下来。"),
+    "angry": ("angry", 0.8, "生气时先暂停10秒，把注意力放在呼吸上，再决定下一步。你的感受值得被看见。"),
+}
 
 
 @router.get("/history", response_model=schemas.EmotionHistoryResponse)
@@ -79,3 +87,61 @@ def get_emotion_trend(
         })
     
     return {"trend": result, "labels": EMOTION_LABELS}
+
+
+@router.post("/quick-checkin", response_model=schemas.QuickMoodResponse)
+def quick_mood_checkin(
+    request: schemas.QuickMoodInput,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """一键情绪输入并返回即时微支持"""
+    mood_key = request.mood.lower().strip()
+    if mood_key not in QUICK_MOOD_MAPPING:
+        mood_key = "stress"
+
+    emotion, score, support = QUICK_MOOD_MAPPING[mood_key]
+    record = models.EmotionRecord(
+        user_id=current_user.id,
+        emotion=emotion,
+        emotion_score=score,
+        note=request.note,
+    )
+    db.add(record)
+    db.commit()
+    rebuild_user_memory(db, current_user.id)
+
+    return {
+        "emotion": emotion,
+        "emotion_label": EMOTION_LABELS.get(emotion, "平静"),
+        "micro_support": support,
+        "breathing_guide": "吸气4秒 → 停2秒 → 呼气6秒，重复3次。",
+    }
+
+
+@router.get("/weekly-report", response_model=schemas.WeeklyReportResponse)
+def get_weekly_report(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """生成近7天AI心理周报"""
+    return generate_weekly_report(db, current_user.id)
+
+
+@router.get("/daily-suggestion", response_model=schemas.DailySuggestionResponse)
+def get_daily_suggestion(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """基于历史情绪和使用行为生成个性化建议"""
+    profile = rebuild_user_memory(db, current_user.id)
+    recent_records = db.query(models.EmotionRecord).filter(
+        models.EmotionRecord.user_id == current_user.id
+    ).order_by(models.EmotionRecord.created_at.desc()).limit(10).all()
+
+    suggestions = build_daily_suggestions(profile, [record.emotion for record in recent_records])
+    return {
+        "date": datetime.utcnow().strftime("%Y-%m-%d"),
+        "memory_hint": profile.conversation_summary or "今天继续温柔地照顾自己。",
+        "suggestions": suggestions,
+    }

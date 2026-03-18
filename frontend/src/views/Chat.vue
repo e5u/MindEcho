@@ -133,6 +133,15 @@
 
       <!-- Input area -->
       <div class="input-area">
+        <div class="quick-moods">
+          <button class="mood-btn" @click="quickCheckIn('stress')" :disabled="isTyping">😮‍💨 压力</button>
+          <button class="mood-btn" @click="quickCheckIn('sad')" :disabled="isTyping">😔 难过</button>
+          <button class="mood-btn" @click="quickCheckIn('angry')" :disabled="isTyping">😣 生气</button>
+        </div>
+        <div v-if="quickSupport" class="quick-support">
+          <div class="support-title">即时支持</div>
+          <div class="support-body">{{ quickSupport }}</div>
+        </div>
         <div class="input-wrapper">
           <textarea
             v-model="inputText"
@@ -175,6 +184,7 @@ const showCrisisAlert = ref(false)
 const lastEmotion = ref(null)
 const messagesContainer = ref(null)
 const textarea = ref(null)
+const quickSupport = ref('')
 
 const emotionLabels = {
   happy: '开心',
@@ -300,6 +310,16 @@ async function sendMessage() {
 async function sendQuickMessage(text) {
   inputText.value = text
   await sendMessage()
+}
+
+async function quickCheckIn(mood) {
+  try {
+    const res = await api.post('/api/emotions/quick-checkin', { mood })
+    quickSupport.value = `${res.data.micro_support} ${res.data.breathing_guide || ''}`.trim()
+    lastEmotion.value = res.data.emotion
+  } catch (e) {
+    quickSupport.value = '我在这里陪你。先慢慢呼吸一下，我们再继续。'
+  }
 }
 
 async function scrollToBottom() {
@@ -772,6 +792,41 @@ onMounted(() => {
   padding: 16px 24px;
   background: white;
   border-top: 1px solid var(--border);
+}
+
+.quick-moods {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mood-btn {
+  border: 1px solid #e8e4ff;
+  border-radius: 16px;
+  background: #f8f6ff;
+  color: var(--primary);
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.quick-support {
+  background: #f6fbff;
+  border: 1px solid #d5ebff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.support-title {
+  font-size: 12px;
+  color: #357ab8;
+  margin-bottom: 2px;
+}
+
+.support-body {
+  font-size: 13px;
+  color: #2b4c6f;
+  line-height: 1.5;
 }
 
 .input-wrapper {

@@ -6,6 +6,8 @@ from app import models, schemas
 from app.auth import get_current_user
 from app.services.emotion_service import detect_emotion, detect_crisis
 from app.services.ai_service import get_ai_response
+from app.services.memory_service import rebuild_user_memory, get_memory_context
+from app.services.cbt_service import build_cbt_questions
 
 router = APIRouter(prefix="/api/chat", tags=["对话"])
 
@@ -60,12 +62,17 @@ async def send_message(
     db.add(emotion_record)
     db.commit()
     db.refresh(user_msg)
+    memory_profile = rebuild_user_memory(db, current_user.id)
     
     # Get conversation history
     history = [
         {"role": msg.role, "content": msg.content}
         for msg in conversation.messages
     ]
+    cbt_questions = build_cbt_questions(
+        thought=request.message,
+        emotion=emotion,
+    ) if emotion in {"sad", "anxious", "angry", "fear", "lonely"} else None
     
     # Get AI response
     ai_response_text = await get_ai_response(
@@ -73,6 +80,8 @@ async def send_message(
         emotion=emotion,
         conversation_history=history,
         is_crisis=is_crisis,
+        memory_context=get_memory_context(memory_profile),
+        cbt_questions=cbt_questions,
     )
     
     # Save assistant message
@@ -90,7 +99,21 @@ async def send_message(
         "user_message": user_msg,
         "assistant_message": assistant_msg,
         "is_crisis": is_crisis,
-        "crisis_message": "请立即拨打心理援助热线：400-161-9995" if is_crisis else None,
+        "crisis_message": "你很重要。请先联系身边可信任的人，并拨打心理援助热线：400-161-9995" if is_crisis else None,
+    }
+
+
+@router.post("/cbt-guidance", response_model=schemas.CbtGuidanceResponse)
+def cbt_guidance(
+    request: schemas.CbtGuidanceRequest,
+    current_user: models.User = Depends(get_current_user),
+):
+    """获取CBT风格引导问题"""
+    _ = current_user
+    questions = build_cbt_questions(request.thought, request.emotion)
+    return {
+        "intro": "我们先不急着下结论，一起把这个想法看得更清楚。",
+        "questions": questions[1:] if questions else [],
     }
 
 

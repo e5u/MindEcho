@@ -102,3 +102,39 @@ class EmotionHistoryResponse(BaseModel):
     records: List[EmotionRecordOut]
     stats: List[EmotionStats]
     total: int
+
+
+class QuickMoodInput(BaseModel):
+    mood: str
+    note: Optional[str] = None
+
+
+class QuickMoodResponse(BaseModel):
+    emotion: str
+    emotion_label: str
+    micro_support: str
+    breathing_guide: Optional[str] = None
+
+
+class WeeklyReportResponse(BaseModel):
+    period: str
+    emotional_trend: str
+    possible_causes: List[str]
+    suggestions: List[str]
+    note: str
+
+
+class DailySuggestionResponse(BaseModel):
+    date: str
+    memory_hint: str
+    suggestions: List[str]
+
+
+class CbtGuidanceRequest(BaseModel):
+    thought: str
+    emotion: Optional[str] = None
+
+
+class CbtGuidanceResponse(BaseModel):
+    intro: str
+    questions: List[str]
