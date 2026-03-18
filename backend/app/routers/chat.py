@@ -6,7 +6,6 @@ from app import models, schemas
 from app.auth import get_current_user
 from app.services.emotion_service import detect_emotion, detect_crisis
 from app.services.ai_service import get_ai_response
-import asyncio
 
 router = APIRouter(prefix="/api/chat", tags=["对话"])
 

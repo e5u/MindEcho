@@ -1,18 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
-import enum
-
-
-class EmotionEnum(str, enum.Enum):
-    happy = "happy"
-    sad = "sad"
-    anxious = "anxious"
-    angry = "angry"
-    neutral = "neutral"
-    fear = "fear"
-    lonely = "lonely"
 
 
 class User(Base):
