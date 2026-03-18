@@ -136,7 +136,7 @@
         <div class="input-wrapper">
           <textarea
             v-model="inputText"
-            placeholder="写下你的心情或困扰... (Shift+Enter 换行，Enter 发送)"
+            placeholder="写下你的心情或困扰…（Shift+Enter 换行，Enter 发送）"
             @keydown.enter.exact.prevent="sendMessage"
             @keydown.shift.enter="() => {}"
             rows="1"
