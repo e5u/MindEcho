@@ -17,6 +17,7 @@ class User(Base):
 
     conversations = relationship("Conversation", back_populates="user")
     emotion_records = relationship("EmotionRecord", back_populates="user")
+    memory_profile = relationship("UserMemory", back_populates="user", uselist=False)
 
 
 class Conversation(Base):
@@ -58,3 +59,18 @@ class EmotionRecord(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="emotion_records")
+
+
+class UserMemory(Base):
+    __tablename__ = "user_memory"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    stress_pattern = Column(String(20), nullable=False, default="unknown")
+    anxiety_pattern = Column(String(20), nullable=False, default="unknown")
+    habit_pattern = Column(Text, nullable=True)
+    top_emotions = Column(String(255), nullable=True)
+    conversation_summary = Column(Text, nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="memory_profile")

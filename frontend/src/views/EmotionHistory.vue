@@ -172,6 +172,34 @@
           </div>
         </div>
 
+        <div class="report-card" v-if="weeklyReport">
+          <h3>🧾 AI心理周报（近7天）</h3>
+          <div class="report-item">
+            <div class="label">情绪趋势</div>
+            <div class="value">{{ weeklyReport.emotional_trend }}</div>
+          </div>
+          <div class="report-item">
+            <div class="label">可能原因</div>
+            <ul>
+              <li v-for="(c, index) in weeklyReport.possible_causes" :key="`cause-${index}`">{{ c }}</li>
+            </ul>
+          </div>
+          <div class="report-item">
+            <div class="label">建议</div>
+            <ul>
+              <li v-for="(s, index) in weeklyReport.suggestions" :key="`weekly-suggestion-${index}`">{{ s }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="report-card" v-if="dailySuggestion">
+          <h3>🎯 今日个性化建议</h3>
+          <p class="daily-hint">{{ dailySuggestion.memory_hint }}</p>
+          <ul>
+            <li v-for="(s, index) in dailySuggestion.suggestions" :key="`daily-suggestion-${index}`">{{ s }}</li>
+          </ul>
+        </div>
+
         <div class="tips-card">
           <h3>💡 心理健康小贴士</h3>
           <div class="tips-grid">
@@ -200,6 +228,8 @@ const loading = ref(true)
 const selectedDays = ref(7)
 const historyData = ref({ records: [], stats: [], total: 0 })
 const trendData = ref([])
+const weeklyReport = ref(null)
+const dailySuggestion = ref(null)
 
 const dateOptions = [
   { label: '7天', value: 7 },
@@ -292,12 +322,16 @@ function formatShortDate(dateStr) {
 async function fetchData() {
   loading.value = true
   try {
-    const [histRes, trendRes] = await Promise.all([
+    const [histRes, trendRes, reportRes, suggestionRes] = await Promise.all([
       api.get(`/api/emotions/history?days=${selectedDays.value}`),
       api.get(`/api/emotions/trend?days=${selectedDays.value}`),
+      api.get('/api/emotions/weekly-report'),
+      api.get('/api/emotions/daily-suggestion'),
     ])
     historyData.value = histRes.data
     trendData.value = trendRes.data.trend
+    weeklyReport.value = reportRes.data
+    dailySuggestion.value = suggestionRes.data
   } catch (e) {
     console.error('Failed to fetch emotion data', e)
   } finally {
@@ -784,5 +818,35 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.report-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.report-card h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.report-item {
+  margin-bottom: 10px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+
+.value,
+.report-card li,
+.daily-hint {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
 }
 </style>

@@ -8,6 +8,11 @@
 - 🔍 **情绪检测**：从用户输入中自动识别情绪状态（开心、悲伤、焦虑、愤怒等）
 - 📊 **情绪可视化**：记录并展示情绪历史趋势，帮助用户了解自身心理状态
 - 🆘 **危机检测**：自动识别自伤/自杀信号，立即提供专业心理援助热线
+- 🧠 **AI 记忆系统**：沉淀用户长期情绪模式（压力/焦虑/习惯），生成个性化回应
+- 🧾 **AI 心理周报**：自动分析近7天情绪趋势、可能诱因与温和建议
+- 🪜 **CBT 引导模块**：通过认知行为风格提问，帮助用户重构消极想法
+- ⚡ **一键情绪输入**：快速选择“压力/难过/生气”并获得即时微支持
+- 🎯 **个性化日建议**：结合历史情绪与使用行为给出每日建议
 - 🔐 **用户认证**：JWT 登录注册，数据安全保护
 
 ## 技术栈
@@ -38,7 +43,10 @@ MindEcho/
 │       │   └── emotions.py  # 情绪历史 API
 │       └── services/
 │           ├── ai_service.py       # AI 回复服务
-│           └── emotion_service.py  # 情绪&危机检测
+│           ├── emotion_service.py  # 情绪&危机检测
+│           ├── memory_service.py   # 长期记忆与个性化建议
+│           ├── report_service.py   # 周报生成
+│           └── cbt_service.py      # CBT 引导问题
 ├── frontend/                # Vue 3 前端
 │   ├── src/
 │   │   ├── views/
@@ -116,6 +124,16 @@ npm run dev
 | `/api/chat/conversations/{id}` | GET | 获取对话详情 |
 | `/api/emotions/history` | GET | 获取情绪历史 |
 | `/api/emotions/trend` | GET | 获取情绪趋势 |
+| `/api/emotions/quick-checkin` | POST | 一键情绪输入并返回即时微支持 |
+| `/api/emotions/weekly-report` | GET | 获取近7天 AI 心理周报 |
+| `/api/emotions/daily-suggestion` | GET | 获取个性化每日建议 |
+| `/api/chat/cbt-guidance` | POST | 获取 CBT 风格引导问题 |
+
+### 提示词示例（系统内部）
+
+- **记忆增强提示**：`用户长期情绪记忆：压力模式=high；焦虑模式=medium；习惯模式=熬夜、拖延。请据此个性化回应。`
+- **CBT 引导提示**：`请在回复最后加入1-2个CBT引导问题，帮助用户重新看待自动化负面想法。`
+- **危机升级流程提示**：`先共情确认，再建议联系身边可信任的人，最后提供热线与紧急就医指引。`
 
 ## 心理援助热线
 
