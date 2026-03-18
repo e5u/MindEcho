@@ -17,6 +17,7 @@ def build_cbt_questions(thought: str, emotion: str | None = None) -> List[str]:
         "有没有一种更平衡、对你更有帮助的说法，可以替代原来的想法？",
     ]
     if thought:
-        questions.append(f"当你想到“{thought[:30]}”时，你的情绪从0到10大约是几分？")
+        display_thought = thought if len(thought) <= 30 else f"{thought[:30]}…"
+        questions.append(f"当你想到“{display_thought}”时，你的情绪从0到10大约是几分？")
 
     return [prefix, emotion_hint, *questions] if emotion_hint else [prefix, *questions]

@@ -6,7 +6,7 @@ from app import models, schemas
 from app.auth import get_current_user
 from app.services.emotion_service import detect_emotion, detect_crisis
 from app.services.ai_service import get_ai_response
-from app.services.memory_service import rebuild_user_memory, get_memory_context
+from app.services.memory_service import rebuild_user_memory, get_memory_context, should_rebuild_memory
 from app.services.cbt_service import build_cbt_questions
 
 router = APIRouter(prefix="/api/chat", tags=["对话"])
@@ -62,7 +62,9 @@ async def send_message(
     db.add(emotion_record)
     db.commit()
     db.refresh(user_msg)
-    memory_profile = rebuild_user_memory(db, current_user.id)
+    memory_profile = db.query(models.UserMemory).filter(models.UserMemory.user_id == current_user.id).first()
+    if should_rebuild_memory(memory_profile):
+        memory_profile = rebuild_user_memory(db, current_user.id)
     
     # Get conversation history
     history = [
@@ -109,7 +111,6 @@ def cbt_guidance(
     current_user: models.User = Depends(get_current_user),
 ):
     """获取CBT风格引导问题"""
-    _ = current_user
     questions = build_cbt_questions(request.thought, request.emotion)
     return {
         "intro": "我们先不急着下结论，一起把这个想法看得更清楚。",

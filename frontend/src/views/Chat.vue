@@ -315,7 +315,8 @@ async function sendQuickMessage(text) {
 async function quickCheckIn(mood) {
   try {
     const res = await api.post('/api/emotions/quick-checkin', { mood })
-    quickSupport.value = `${res.data.micro_support} ${res.data.breathing_guide || ''}`.trim()
+    const supportParts = [res.data.micro_support, res.data.breathing_guide].filter(Boolean)
+    quickSupport.value = supportParts.join(' ')
     lastEmotion.value = res.data.emotion
   } catch (e) {
     quickSupport.value = '我在这里陪你。先慢慢呼吸一下，我们再继续。'

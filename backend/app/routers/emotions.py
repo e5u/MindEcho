@@ -8,7 +8,7 @@ from app import models, schemas
 from app.auth import get_current_user
 from app.services.emotion_service import EMOTION_LABELS
 from app.services.report_service import generate_weekly_report
-from app.services.memory_service import rebuild_user_memory, build_daily_suggestions
+from app.services.memory_service import rebuild_user_memory, build_daily_suggestions, should_rebuild_memory
 
 router = APIRouter(prefix="/api/emotions", tags=["情绪"])
 
@@ -109,7 +109,9 @@ def quick_mood_checkin(
     )
     db.add(record)
     db.commit()
-    rebuild_user_memory(db, current_user.id)
+    profile = db.query(models.UserMemory).filter(models.UserMemory.user_id == current_user.id).first()
+    if should_rebuild_memory(profile):
+        profile = rebuild_user_memory(db, current_user.id)
 
     return {
         "emotion": emotion,
@@ -134,7 +136,9 @@ def get_daily_suggestion(
     current_user: models.User = Depends(get_current_user),
 ):
     """基于历史情绪和使用行为生成个性化建议"""
-    profile = rebuild_user_memory(db, current_user.id)
+    profile = db.query(models.UserMemory).filter(models.UserMemory.user_id == current_user.id).first()
+    if should_rebuild_memory(profile):
+        profile = rebuild_user_memory(db, current_user.id)
     recent_records = db.query(models.EmotionRecord).filter(
         models.EmotionRecord.user_id == current_user.id
     ).order_by(models.EmotionRecord.created_at.desc()).limit(10).all()

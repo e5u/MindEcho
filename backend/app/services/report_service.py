@@ -11,6 +11,9 @@ TREND_TEXT = {
     "mixed": "过去7天情绪有波动，存在起伏但也出现了恢复时段。",
 }
 
+NEGATIVE_TREND_MULTIPLIER = 1.3
+POSITIVE_TREND_MULTIPLIER = 1.1
+
 
 CAUSE_HINTS = {
     "anxious": "学习任务、考试或未来规划带来的不确定感可能是主要诱因。",
@@ -40,15 +43,15 @@ def generate_weekly_report(db: Session, user_id: int) -> Dict[str, object]:
     negative_total = sum(counter.get(e, 0) for e in ["sad", "anxious", "angry", "lonely", "fear"])
     positive_total = counter.get("happy", 0) + counter.get("neutral", 0)
 
-    if negative_total > positive_total * 1.3:
+    if negative_total > positive_total * NEGATIVE_TREND_MULTIPLIER:
         trend_key = "negative"
-    elif positive_total > negative_total * 1.1:
+    elif positive_total > negative_total * POSITIVE_TREND_MULTIPLIER:
         trend_key = "positive"
     else:
         trend_key = "mixed"
 
     top_negative = [emo for emo, _ in counter.most_common() if emo in CAUSE_HINTS][:2]
-    causes: List[str] = [CAUSE_HINTS[e] for e in top_negative] or ["近期情绪波动可能与学业节奏和休息不足有关。"]
+    causes: List[str] = [CAUSE_HINTS[e] for e in top_negative if e in CAUSE_HINTS] or ["近期情绪波动可能与学业节奏和休息不足有关。"]
 
     suggestions = [
         "把今天最困扰你的念头写成一句话，再问自己：有没有证据支持/反驳它？",

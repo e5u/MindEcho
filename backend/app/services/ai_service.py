@@ -145,7 +145,10 @@ async def _get_openai_response(
     if cbt_questions:
         messages.append({
             "role": "system",
-            "content": "请在回复最后加入1-2个CBT引导问题，帮助用户重新看待自动化负面想法。",
+            "content": (
+                "请在回复最后加入1-2个CBT引导问题，帮助用户重新看待自动化负面想法。"
+                f"可优先参考这些问题：{'；'.join(cbt_questions[:3])}"
+            ),
         })
     
     messages.append({"role": "user", "content": user_message})

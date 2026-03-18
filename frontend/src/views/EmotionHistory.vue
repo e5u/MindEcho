@@ -181,13 +181,13 @@
           <div class="report-item">
             <div class="label">可能原因</div>
             <ul>
-              <li v-for="c in weeklyReport.possible_causes" :key="c">{{ c }}</li>
+              <li v-for="(c, index) in weeklyReport.possible_causes" :key="`cause-${index}`">{{ c }}</li>
             </ul>
           </div>
           <div class="report-item">
             <div class="label">建议</div>
             <ul>
-              <li v-for="s in weeklyReport.suggestions" :key="s">{{ s }}</li>
+              <li v-for="(s, index) in weeklyReport.suggestions" :key="`weekly-suggestion-${index}`">{{ s }}</li>
             </ul>
           </div>
         </div>
@@ -196,7 +196,7 @@
           <h3>🎯 今日个性化建议</h3>
           <p class="daily-hint">{{ dailySuggestion.memory_hint }}</p>
           <ul>
-            <li v-for="s in dailySuggestion.suggestions" :key="s">{{ s }}</li>
+            <li v-for="(s, index) in dailySuggestion.suggestions" :key="`daily-suggestion-${index}`">{{ s }}</li>
           </ul>
         </div>
 

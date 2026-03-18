@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import datetime, timedelta
 from typing import Dict, List
 from sqlalchemy.orm import Session
 from app import models
@@ -29,18 +30,25 @@ def rebuild_user_memory(db: Session, user_id: int) -> models.UserMemory:
         models.Message.role == "user",
     ).order_by(models.Message.created_at.desc()).limit(30).all()
 
-    total_messages = max(len(messages), 1)
+    total_messages = len(messages)
     all_text = " ".join(msg.content for msg in messages)
-    stress_ratio = sum(1 for k in STRESS_HINTS if k in all_text) / max(len(STRESS_HINTS), 1)
-    anxiety_ratio = sum(1 for k in ANXIETY_HINTS if k in all_text) / max(len(ANXIETY_HINTS), 1)
+    stress_hits = sum(1 for msg in messages if any(hint in msg.content for hint in STRESS_HINTS))
+    anxiety_hits = sum(1 for msg in messages if any(hint in msg.content for hint in ANXIETY_HINTS))
+    if total_messages == 0:
+        stress_ratio = 0.0
+        anxiety_ratio = 0.0
+    else:
+        stress_ratio = stress_hits / total_messages
+        anxiety_ratio = anxiety_hits / total_messages
     habit_hits = [hint for hint in HABIT_HINTS if hint in all_text]
 
     emotion_counter = Counter(record.emotion for record in records)
     top_emotions = [emotion for emotion, _ in emotion_counter.most_common(3)]
     summary = "、".join(top_emotions) if top_emotions else "平静"
 
-    stress_level = _level_by_ratio(stress_ratio)
-    anxiety_level = _level_by_ratio(anxiety_ratio)
+    has_message_data = len(messages) > 0
+    stress_level = _level_by_ratio(stress_ratio) if has_message_data else "unknown"
+    anxiety_level = _level_by_ratio(anxiety_ratio) if has_message_data else "unknown"
     habit_pattern = "、".join(habit_hits) if habit_hits else "暂未发现明显习惯模式"
 
     profile = db.query(models.UserMemory).filter(models.UserMemory.user_id == user_id).first()
@@ -53,12 +61,25 @@ def rebuild_user_memory(db: Session, user_id: int) -> models.UserMemory:
     profile.habit_pattern = habit_pattern
     profile.top_emotions = ",".join(top_emotions)
     profile.conversation_summary = (
-        f"最近{min(len(messages), total_messages)}次表达以{summary}为主，"
+        f"最近{len(messages)}次表达以{summary}为主，"
         f"压力水平{stress_level}，焦虑水平{anxiety_level}。"
     )
     db.commit()
     db.refresh(profile)
     return profile
+
+
+def should_rebuild_memory(profile: models.UserMemory | None, hours: int = 6) -> bool:
+    if not profile or not profile.updated_at:
+        return True
+    updated_at = profile.updated_at
+    if isinstance(updated_at, datetime):
+        if updated_at.tzinfo:
+            now = datetime.now(updated_at.tzinfo)
+        else:
+            now = datetime.utcnow()
+        return updated_at < now - timedelta(hours=hours)
+    return True
 
 
 def get_memory_context(profile: models.UserMemory | None) -> Dict[str, str]:
